@@ -1,0 +1,5 @@
+#!/bin/bash
+sudo cp piswitcher.service /etc/systemd/system/piswitcher.service
+sudo systemctl start piswitcher.service
+sudo systemctl enable piswitcher.service
+
