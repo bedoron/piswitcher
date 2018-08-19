@@ -178,8 +178,8 @@ def run():
 #    while True:
 #        time.sleep(0.5)
     
-    b_1 = Button(17, bounce_time=0.5)
-    b_2 = Button(18, bounce_time=0.5)
+    b_1 = Button(17, bounce_time)
+    b_2 = Button(18, bounce_time)
 
     b_1.when_pressed = relay.toggle_one
     b_1.when_released = relay.toggle_one
