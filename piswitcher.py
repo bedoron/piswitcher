@@ -108,7 +108,7 @@ class RelayHandler(object):
     def __init__(self, relay, mqtt_hostname, mqtt_port=1883):
         self._mqtt_port = mqtt_port
         self._mqtt_hostname = mqtt_hostname
-        self.client = mqtt.Client('RelayArray-ID0')
+        self.client = mqtt.Client('RelayArray-ID1')
         self._relay = relay
         self._relay.notifier = self.notifier
         self.client.on_connect = self._on_connect
@@ -178,8 +178,8 @@ def run():
 #    while True:
 #        time.sleep(0.5)
     
-    b_1 = Button(17, bounce_time)
-    b_2 = Button(18, bounce_time)
+    b_1 = Button(18)
+    b_2 = Button(17)
 
     b_1.when_pressed = relay.toggle_one
     b_1.when_released = relay.toggle_one
