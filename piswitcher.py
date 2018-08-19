@@ -1,13 +1,14 @@
 import serial
 import time
-# from gpiozero import Button
-from signal import signal
+from gpiozero import Button
+from signal import pause
 import logging
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import json
 
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(level=logging.INFO, format=FORMAT)
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 logger = logging.getLogger(__name__)
 
 
@@ -107,7 +108,7 @@ class RelayHandler(object):
     def __init__(self, relay, mqtt_hostname, mqtt_port=1883):
         self._mqtt_port = mqtt_port
         self._mqtt_hostname = mqtt_hostname
-        self.client = mqtt.Client('RelayArray-ID')
+        self.client = mqtt.Client('RelayArray-ID0')
         self._relay = relay
         self._relay.notifier = self.notifier
         self.client.on_connect = self._on_connect
@@ -118,6 +119,7 @@ class RelayHandler(object):
         self.client.loop_start()
 
     def _on_connect(self, client, userdata, flags, rc):
+        # import pdb; pdb.set_trace()
         self.logger.info('Connected to HA MQTT')
         switch_one = self.STATUS_TOPIC.format(command='cmnd', relay_number=0)
         switch_two = self.STATUS_TOPIC.format(command='cmnd', relay_number=1)
@@ -133,6 +135,8 @@ class RelayHandler(object):
         self._relay.all_off()
 
     def _handle_relay_command(self, switch, payload):
+        # self.logger.debug('Recieved MQTT message: %s', json.dumps(payload))
+
         action = payload.payload
         timestamp = payload.timestamp
         if timestamp < self._timestamps[switch]:
@@ -149,6 +153,7 @@ class RelayHandler(object):
         self.logger.info('Recieved message: %s', msg.payload)
 
     def notifier(self, relay_number, action):
+        #import pdb; pdb.set_trace()
         topic = self.STATUS_TOPIC.format(command='stat', relay_number=relay_number)
         result = self.client.publish(topic, action)
 
@@ -163,24 +168,26 @@ class RelayHandler(object):
 
 
 def run():
+    relay_device = '/dev/ttyAMA0' # 'COM6'
+    ha_host = '192.168.14.192'
+
     logger.info('Starting service')
-    relay = Relay('COM6')
-    relay_handler = RelayHandler(relay, '192.168.14.192')
+    relay = Relay(relay_device)
+    relay_handler = RelayHandler(relay, ha_host)
 
-    while True:
-        time.sleep(0.5)
-    # relay = Relay('/dev/ttyAMA0')
-    # b_1 = Button(17, bounce_time=0.5)
-    # b_2 = Button(18, bounce_time=0.5)
+#    while True:
+#        time.sleep(0.5)
+    
+    b_1 = Button(17, bounce_time=0.5)
+    b_2 = Button(18, bounce_time=0.5)
 
-    # b_1.when_pressed = relay.toggle_one
-    # b_1.when_released = relay.toggle_one
-    #
-    # b_2.when_pressed = relay.toggle_two
-    # b_2.when_released = relay.toggle_two
+    b_1.when_pressed = relay.toggle_one
+    b_1.when_released = relay.toggle_one
+    
+    b_2.when_pressed = relay.toggle_two
+    b_2.when_released = relay.toggle_two
 
-    # pause()
-    print "Bleh"
+    pause()
 
 
 if __name__ == "__main__":
