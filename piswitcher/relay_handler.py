@@ -29,7 +29,7 @@ class RelayHandler(object):
         switch_one = self.STATUS_TOPIC.format(command='cmnd', relay_number=0)
         switch_two = self.STATUS_TOPIC.format(command='cmnd', relay_number=1)
 
-        client.subscribe([(switch_one, 0), (switch_two, 0)])
+        client.subscribe([(switch_one, 0), (switch_two, 0), (self.STATUS_TOPIC_ALL, 0)])
         client.message_callback_add(switch_one,
                                     lambda client, userdata, message: self._handle_relay_command(0, message))
         client.message_callback_add(switch_two,
@@ -38,6 +38,9 @@ class RelayHandler(object):
                                     lambda client, userdata, message: self._handle_relay_command_all(message))
 
         self._relay.all_off()
+
+    def _on_log(self, client, userdata, level, buf):
+        self.logger.info('[%s] %s', level, buf)
 
     def _handle_relay_command(self, switch, payload):
         # self.logger.debug('Recieved MQTT message: %s', json.dumps(payload))
@@ -55,7 +58,7 @@ class RelayHandler(object):
         self._relay.set(switch, resolved_action)
 
     def _on_message(self, client, userdata, msg):
-        self.logger.info('Recieved message: %s', msg.payload)
+        self.logger.info('Received message: %s', msg.payload)
 
     def notifier(self, relay_number, action):
         # import pdb; pdb.set_trace()
